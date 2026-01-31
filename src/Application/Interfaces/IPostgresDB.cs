@@ -1,0 +1,24 @@
+using Npgsql;
+
+namespace Students.Service.src.Application.Interfaces;
+
+public interface IPostgresDB
+{
+    Task<T?> ExecuteScalarAsync<T>(
+        string sql,
+        CancellationToken cancellationToken,
+        params NpgsqlParameter[] parameters);
+
+    Task<int> ExecuteAsync(
+        string sql,
+        object? parameters = null,
+        CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<T>> QueryAsync<T>(
+        string sql,
+        object? parameters = null,
+        CancellationToken cancellationToken = default);
+
+    Task<bool> IsHealthyAsync(
+        CancellationToken cancellationToken = default);
+}
