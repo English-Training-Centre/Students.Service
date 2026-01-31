@@ -2,10 +2,13 @@ using System.IO.Compression;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Grpc.Net.Compression;
+using Libs.Core.Internal.Protos.SettingService;
 using Libs.Core.Internal.Protos.UserService;
 using Libs.Core.Internal.src.Interfaces;
+using Libs.Core.Public.src.Interfaces;
 using Npgsql;
 using Polly;
+using Students.Service.src.Application.Handlers;
 using Students.Service.src.Application.Interfaces;
 using Students.Service.src.Infrastructure.Persistence;
 using Students.Service.src.Infrastructure.Repositories;
@@ -37,8 +40,11 @@ public static class MiddlewareConfig
 
             services.AddScoped<IPostgresDB, PostgresDB>();
             services.AddScoped<IStudentRepository, StudentRepository>();
+            services.AddScoped<IStudentGrpcService, StudentHandler>();
             services.AddScoped<IUserGrpcService, UserGrpcServiceClient>();
+            services.AddScoped<ISettingFlyerIdGrpcService, SettingsFlyerIdServiceClient>();
 
+            /* Users */
             services.AddGrpcClient<UsersGrpc.UsersGrpcClient>(op =>
             {
                 op.Address = new Uri(configuration["GrpcServices:UserService"] ?? "http://localhost:5284");
@@ -53,6 +59,24 @@ public static class MiddlewareConfig
             {
                 channelOptions.MaxReceiveMessageSize = 10 * 1024 * 1024; // 10 MB
                 channelOptions.MaxSendMessageSize = 5 * 1024 * 1024;     // 5 MB
+                channelOptions.CompressionProviders = [new GzipCompressionProvider(CompressionLevel.Fastest)];
+            });
+
+            /* Settings Flyer */
+            services.AddGrpcClient<SettingFlyerIdGrpc.SettingFlyerIdGrpcClient>(op =>
+            {
+                op.Address = new Uri(configuration["GrpcServices:Settings.Service"] ?? "http://localhost:5184");
+            })
+            .ConfigurePrimaryHttpMessageHandler(() =>
+                new SocketsHttpHandler
+                {
+                    EnableMultipleHttp2Connections = true
+                })
+            .AddTransientHttpErrorPolicy(policy => policy.WaitAndRetryAsync(3, _ => TimeSpan.FromMilliseconds(500)))
+            .ConfigureChannel(channelOptions =>
+            {
+                channelOptions.MaxReceiveMessageSize = 10 * 1024 * 1024; // 10 MB
+                channelOptions.MaxSendMessageSize = 10 * 1024 * 1024;     // 5 MB
                 channelOptions.CompressionProviders = [new GzipCompressionProvider(CompressionLevel.Fastest)];
             });
 

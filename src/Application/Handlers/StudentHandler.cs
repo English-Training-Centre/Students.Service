@@ -8,10 +8,11 @@ using Students.Service.src.Application.Interfaces;
 
 namespace Students.Service.src.Application.Handlers;
 
-public sealed class StudentHandler (IStudentRepository studentRep, IUserGrpcService userClient, ILogger<StudentHandler> logger) : IStudentGrpcService
+public sealed class StudentHandler (IStudentRepository studentRep, IUserGrpcService userClient, ISettingFlyerIdGrpcService flyerClient, ILogger<StudentHandler> logger) : IStudentGrpcService
 {
     private readonly IStudentRepository _studentRep = studentRep;
     private readonly IUserGrpcService _userClient = userClient;
+    private readonly ISettingFlyerIdGrpcService _flyerClient = flyerClient;
     private readonly ILogger<StudentHandler> _logger = logger;
 
     public async Task<StudentGrpcCreateResponse> CreateAsync(StudentGrpcCreateRequest request, CancellationToken ct)
@@ -26,17 +27,22 @@ public sealed class StudentHandler (IStudentRepository studentRep, IUserGrpcServ
 
         try
         {
+            Guid flyerId = await _flyerClient.GetFlyerId(ct);
             var userClient = await _userClient.CreateAsync(userClientRequest, ct);
 
             if (!userClient.IsSuccess || userClient.UserId.Equals(Guid.Empty) || userClient.Username is null || userClient.Password is null)
             {
                 return new StudentGrpcCreateResponse { IsSuccess = false, Message = userClient.Message };
             }
+            else if (flyerId.Equals(Guid.Empty))
+            {
+                return new StudentGrpcCreateResponse { IsSuccess = false, Message = "Flyer id is null" };
+            }
 
             var studentRequest = new StudentCreateRequest
             (
                 userClient.UserId,
-                Guid.Empty,
+                flyerId,
                 request.StudentGender,
                 request.StudentBirthDate,
                 request.ResidencialAddress
