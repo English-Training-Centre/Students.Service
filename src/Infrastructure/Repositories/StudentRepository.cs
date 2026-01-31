@@ -12,8 +12,8 @@ public sealed class StudentRepository (IPostgresDB db, ILogger<StudentRepository
     public async Task<Guid> CreateStudentAsync(StudentCreateRequest request, CancellationToken ct)
     {
         const string sql = @"
-        INSERT INTO tbStudent (user_id, flyer_id, gender, birth_date, residential_address, is_enrolled, payment_id)
-        VALUES (@UserId, @FlyerId, @Gender::gender_enum, @BirthDate, @ResidencialAddress, @IsEnrolled, @PaymentId)
+        INSERT INTO tbStudent (user_id, flyer_id, gender, birth_date, residential_address)
+        VALUES (@UserId, @FlyerId, @Gender::gender_enum, @BirthDate, @ResidencialAddress)
         RETURNING id
         ";
 
@@ -26,9 +26,7 @@ public sealed class StudentRepository (IPostgresDB db, ILogger<StudentRepository
                 new NpgsqlParameter("@FlyerId", request.FlyerId),
                 new NpgsqlParameter("@Gender", request.Gender),
                 new NpgsqlParameter("@BirthDate", request.BirthDate),
-                new NpgsqlParameter("@ResidencialAddress", request.ResidencialAddress),
-                new NpgsqlParameter("@IsEnrolled", request.IsEnrolled),
-                new NpgsqlParameter("@PaymentId", request.PaymentId)
+                new NpgsqlParameter("@ResidencialAddress", request.ResidencialAddress)
             );
         }
         catch (PostgresException pgEx)

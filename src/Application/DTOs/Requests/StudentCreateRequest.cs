@@ -6,7 +6,5 @@ public sealed record StudentCreateRequest
     Guid FlyerId,
     string Gender,
     DateTime BirthDate,
-    string ResidencialAddress,
-    bool IsEnrolled,
-    Guid PaymentId
+    string ResidencialAddress
 );
