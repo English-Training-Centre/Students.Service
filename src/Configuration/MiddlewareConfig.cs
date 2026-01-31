@@ -1,14 +1,15 @@
+using System.IO.Compression;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Grpc.Net.Compression;
+using Libs.Core.Internal.Protos.UserService;
+using Libs.Core.Internal.src.Interfaces;
 using Npgsql;
+using Polly;
 using Students.Service.src.Application.Interfaces;
 using Students.Service.src.Infrastructure.Persistence;
-using System.IO.Compression;
-using Polly;
-using Grpc.Net.Compression;
-using Libs.Core.Internal.src.Interfaces;
-using Libs.Core.Internal.Protos.UserService;
-using Libs.Core.Public.src.Interfaces;
+using Students.Service.src.Infrastructure.Repositories;
+using Students.Service.src.Infrastructure.Services;
 
 namespace Students.Service.src.Configuration;
 
@@ -35,6 +36,25 @@ public static class MiddlewareConfig
                     .AddNpgSql(nd => nd.GetRequiredService<NpgsqlDataSource>());
 
             services.AddScoped<IPostgresDB, PostgresDB>();
+            services.AddScoped<IStudentRepository, StudentRepository>();
+            services.AddScoped<IUserGrpcService, UserGrpcServiceClient>();
+
+            services.AddGrpcClient<UsersGrpc.UsersGrpcClient>(op =>
+            {
+                op.Address = new Uri(configuration["GrpcServices:UserService"] ?? "http://localhost:5284");
+            })
+            .ConfigurePrimaryHttpMessageHandler(() =>
+                new SocketsHttpHandler
+                {
+                    EnableMultipleHttp2Connections = true
+                })
+            .AddTransientHttpErrorPolicy(policy => policy.WaitAndRetryAsync(3, _ => TimeSpan.FromMilliseconds(500)))
+            .ConfigureChannel(channelOptions =>
+            {
+                channelOptions.MaxReceiveMessageSize = 10 * 1024 * 1024; // 10 MB
+                channelOptions.MaxSendMessageSize = 5 * 1024 * 1024;     // 5 MB
+                channelOptions.CompressionProviders = [new GzipCompressionProvider(CompressionLevel.Fastest)];
+            });
 
             services.AddGrpc();
         }
