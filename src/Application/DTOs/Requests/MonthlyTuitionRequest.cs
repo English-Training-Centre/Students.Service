@@ -3,8 +3,8 @@ namespace Students.Service.src.Application.DTOs.Requests;
 public sealed record MonthlyTuitionRequest
 (
     Guid CourseId,
-    Guid PaymentId,
-    string Description,
+    string DescriptionEn,
+    string DescriptionCode,
     DateTime ReferenceMonthDate,
     DateTime DueDate,
     string Status

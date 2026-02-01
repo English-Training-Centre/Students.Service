@@ -97,8 +97,8 @@ public sealed class StudentRepository (IPostgresDB db, ILogger<StudentRepository
     public async Task CreateMonthlyTuitionAsync(MonthlyTuitionRequest request, CancellationToken ct)
     {
         const string sql = @"
-            INSERT INTO tbMonthlyTuition (course_id, payment_id, description, reference_month_date, due_date, status) 
-            VALUES(@CourseId, @PaymentId, @Description, @ReferenceMonthDate, @DueDate, @Status::status_monthly_tuition_enum);
+            INSERT INTO tbMonthlyTuition (course_id, description_en, description_code, reference_month_date, due_date, status) 
+            VALUES(@CourseId, @DescriptionEn, @DescriptionCode, @ReferenceMonthDate, @DueDate, @Status::status_monthly_tuition_enum);
         ";
 
         try
@@ -118,8 +118,8 @@ public sealed class StudentRepository (IPostgresDB db, ILogger<StudentRepository
     public async Task<Guid> CreatePaymentAsync(PaymentCreateRequest request, CancellationToken ct)
     {
         const string sql = @"
-        INSERT INTO tbPayments (received_from, description_pt, description_code, method, total_paid, in_words_pt, in_words_code)
-        VALUES (@ReceivedFrom, @DescriptionPt, @DescriptionCode, @Method::pymt_method, @TotalPaid, @InWordsPt, @InWordsCode)
+        INSERT INTO tbPayments (received_from, description_en, description_code, method, total_paid, in_words_pt, in_words_code)
+        VALUES (@ReceivedFrom, @DescriptionEn, @DescriptionCode, @Method::pymt_method, @TotalPaid, @InWordsPt, @InWordsCode)
         RETURNING id
         ";
 
@@ -129,7 +129,7 @@ public sealed class StudentRepository (IPostgresDB db, ILogger<StudentRepository
                 sql,
                 ct,
                 new NpgsqlParameter("@ReceivedFrom", request.ReceivedFrom),
-                new NpgsqlParameter("@DescriptionPt", request.DescriptionPt),
+                new NpgsqlParameter("@DescriptionEn", request.DescriptionEn),
                 new NpgsqlParameter("@DescriptionCode", request.DescriptionCode),
                 new NpgsqlParameter("@Method", request.Method),
                 new NpgsqlParameter("@TotalPaid", request.TotalPaid),

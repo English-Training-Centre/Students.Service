@@ -36,7 +36,7 @@ public sealed class StudentHandler (IStudentRepository studentRep, IUserGrpcServ
             }
             else if (flyerId.Equals(Guid.Empty))
             {
-                return new StudentGrpcCreateResponse { IsSuccess = false, Message = "Flyer id is null" };
+                return new StudentGrpcCreateResponse { IsSuccess = false, Message = "Flyer ID is null" };
             }
 
             var studentRequest = new StudentCreateRequest
@@ -46,7 +46,51 @@ public sealed class StudentHandler (IStudentRepository studentRep, IUserGrpcServ
                 request.StudentGender,
                 request.StudentBirthDate,
                 request.ResidencialAddress
-            );   
+            );  
+
+            Guid studentId = await _studentRep.CreateStudentAsync(studentRequest, ct) ;            
+            if (studentId.Equals(Guid.Empty))
+            {
+                return new StudentGrpcCreateResponse { IsSuccess = false, Message = "Student ID is null" };
+            }
+
+            if (request.GuardianFullName is not null && request.GuardianPhoneNumber is not null)
+            {
+                var guardianRequest = new GuardianCreateRequest
+                (
+                    studentId,
+                    request.GuardianFullName,
+                    request.GuardianPhoneNumber
+                );
+
+                await _studentRep.CreateGuardianAsync(guardianRequest, ct);
+            }    
+
+            var courseRequest = new CourseCreateRequest
+            (
+                studentId,
+                request.CourseModality,
+                request.CoursePackage,
+                request.CourseLevel,
+                request.CourseTime
+            );
+
+            Guid courseId = await _studentRep.CreateCourseAsync(courseRequest, ct);
+            if (courseId.Equals(Guid.Empty))
+            {
+                return new StudentGrpcCreateResponse { IsSuccess = false, Message = "Course ID is null" };
+            }
+
+            var now = DateTime.UtcNow;
+            var referenceMonthDate = new DateTime(now.Year, now.Month, 1);
+            var dueDate = new DateTime(now.Year, now.Month, 10);
+
+            var monthlyTuitionRequest = new MonthlyTuitionRequest
+            (
+                courseId,
+                $"{referenceMonthDate:MMMM} Tuition Fee",
+                
+            );
         }
         catch (Exception ex)
         {
