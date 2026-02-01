@@ -85,11 +85,16 @@ public sealed class StudentHandler (IStudentRepository studentRep, IUserGrpcServ
             var referenceMonthDate = new DateTime(now.Year, now.Month, 1);
             var dueDate = new DateTime(now.Year, now.Month, 10);
 
+            string currentMonth = GetMonth(referenceMonthDate);
+
             var monthlyTuitionRequest = new MonthlyTuitionRequest
             (
                 courseId,
-                $"{referenceMonthDate:MMMM} Tuition Fee",
-                
+                $"{currentMonth} Tuition Fee",
+                GetMonthCode(currentMonth),
+                referenceMonthDate,
+                dueDate,
+                GetStatus(dueDate)
             );
         }
         catch (Exception ex)
@@ -97,5 +102,29 @@ public sealed class StudentHandler (IStudentRepository studentRep, IUserGrpcServ
             _logger.LogError(ex, " - An unexpected error occurred...");
             return new StudentGrpcCreateResponse { IsSuccess = false, Message = "An unexpected error occurred..." };
         }
+    }
+
+    private static string GetMonth(DateTime referenceMonth)
+    {
+        return $"{referenceMonth:MMMM}";
+    }
+
+    private static string GetMonthCode(string month)
+    {
+        if (string.IsNullOrWhiteSpace(month))
+            throw new ArgumentException("Month is required", nameof(month));
+
+        return $"{month.ToUpperInvariant()}_TUITION_FEE";
+    }
+
+    private static string GetStatus(DateTime dueDate)
+    {
+        var now = DateTime.Now;
+        if (dueDate >= now)
+        { return "Pending"; }
+        else if (dueDate < now)
+        { return "Overdue"; }
+        else
+        { return "Error"; }
     }
 }
