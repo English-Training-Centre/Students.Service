@@ -114,18 +114,6 @@ public sealed class StudentHandler (IStudentRepository studentRep, IUserGrpcServ
         }
     }
 
-    private static string GetStudentCode(string format, DateTime? date, string? month)
-    {
-        switch (format)
-        {
-            case "referenceMonth" :
-            {
-                return $"{date:MMMM}";
-                break;
-            }
-        }
-    }
-
     private static string GetMonth(DateTime referenceMonth)
     {
         return $"{referenceMonth:MMMM}";
