@@ -96,11 +96,33 @@ public sealed class StudentHandler (IStudentRepository studentRep, IUserGrpcServ
                 dueDate,
                 GetStatus(dueDate)
             );
+
+            await _studentRep.CreateMonthlyTuitionAsync(monthlyTuitionRequest, ct);
+
+            return new StudentGrpcCreateResponse
+            {
+                IsSuccess = true,
+                Message = "Student created.",
+                Username = userClient.Username,
+                Password = userClient.Password
+            };
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, " - An unexpected error occurred...");
             return new StudentGrpcCreateResponse { IsSuccess = false, Message = "An unexpected error occurred..." };
+        }
+    }
+
+    private static string GetStudentCode(string format, DateTime? date, string? month)
+    {
+        switch (format)
+        {
+            case "referenceMonth" :
+            {
+                return $"{date:MMMM}";
+                break;
+            }
         }
     }
 
