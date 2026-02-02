@@ -4,7 +4,7 @@ using Students.Service.src.Application.Interfaces;
 
 namespace Students.Service.src.Infrastructure.Repositories;
 
-public sealed class StudentRepository(IPostgresDB db, ILogger<StudentRepository> logger) : IStudentRepository
+public sealed class StudentRepository (IPostgresDB db, ILogger<StudentRepository> logger) : IStudentRepository
 {
     private readonly IPostgresDB _db = db;
     private readonly ILogger<StudentRepository> _logger = logger;
@@ -118,8 +118,8 @@ public sealed class StudentRepository(IPostgresDB db, ILogger<StudentRepository>
     public async Task<Guid> CreatePaymentAsync(PaymentCreateRequest request, CancellationToken ct)
     {
         const string sql = @"
-        INSERT INTO tbPayments (received_from, description_en, description_code, method, total_paid, in_words_pt, in_words_code)
-        VALUES (@ReceivedFrom, @DescriptionEn, @DescriptionCode, @Method::pymt_method, @TotalPaid, @InWordsPt, @InWordsCode)
+        INSERT INTO tbPayments (received_from, description_en, description_code, method, total_paid, amount_in_words_en, amount_in_words_code)
+        VALUES (@ReceivedFrom, @DescriptionEn, @DescriptionCode, @Method::pymt_method, @TotalPaid, @AmountInWordsEn, @AmountInWordsCode)
         RETURNING id
         ";
 
@@ -133,8 +133,8 @@ public sealed class StudentRepository(IPostgresDB db, ILogger<StudentRepository>
                 new NpgsqlParameter("@DescriptionCode", request.DescriptionCode),
                 new NpgsqlParameter("@Method", request.Method),
                 new NpgsqlParameter("@TotalPaid", request.TotalPaid),
-                new NpgsqlParameter("@InWordsPt", request.InWordsPt),
-                new NpgsqlParameter("@InWordsCode", request.InWordsCode)
+                new NpgsqlParameter("@AmountInWordsEn", request.AmountInWordsEn),
+                new NpgsqlParameter("@AmountInWordsCode", request.AmountInWordsCode)
             );
         }
         catch (PostgresException pgEx)

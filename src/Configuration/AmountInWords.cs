@@ -4,101 +4,122 @@ namespace Students.Service.src.Configuration;
 
 public sealed class AmountInWords
 {
-    private static readonly string[] Unidades = ["", "Um", "Dois", "Três", "Quatro", "Cinco", "Seis", "Sete", "Oito", "Nove"];
-    private static readonly string[] DezADezenove = ["Dez", "Onze", "Doze", "Treze", "Quatorze", "Quinze", "Dezesseis", "Dezessete", "Dezoito", "Dezenove"];
-    private static readonly string[] Dezenas = ["", "", "Vinte", "Trinta", "Quarenta", "Cinquenta", "Sessenta", "Setenta", "Oitenta", "Noventa"];
-    private static readonly string[] Centenas = ["", "Cento", "Duzentos", "Trezentos", "Quatrocentos", "Quinhentos", "Seiscentos", "Setecentos", "Oitocentos", "Novecentos"];
-    //private static readonly string[] Milhares = [ "", "Mil" ];
+    private static readonly string[] Units =
+    [
+        "", "One", "Two", "Three", "Four",
+        "Five", "Six", "Seven", "Eight", "Nine"
+    ];
 
-    public static string ConverterParaExtenso(decimal numero)
+    private static readonly string[] TenToNineteen =
+    [
+        "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen",
+        "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"
+    ];
+
+    private static readonly string[] Tens =
+    [
+        "", "", "Twenty", "Thirty", "Forty",
+        "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"
+    ];
+
+    private static readonly string[] Hundreds =
+    [
+        "", "One Hundred", "Two Hundred", "Three Hundred",
+        "Four Hundred", "Five Hundred", "Six Hundred",
+        "Seven Hundred", "Eight Hundred", "Nine Hundred"
+    ];
+
+    public static string ConvertToWords(decimal number)
     {
-        if (numero == 0) return "Zero Metical";
-        if (numero > 999999999.99m)
-            throw new InvalidOperationException("Atingiu o limite. Por favor, contacte o administrador!");
+        if (number == 0)
+            return "Zero Metical";
 
-        int parteInteira = (int)Math.Floor(numero);
-        int parteDecimal = (int)Math.Round((numero - parteInteira) * 100);
+        if (number > 999_999_999.99m)
+            throw new InvalidOperationException(
+                "Limit reached. Please contact the administrator!"
+            );
 
-        var partes = new List<string>();
+        int integerPart = (int)Math.Floor(number);
+        int decimalPart = (int)Math.Round((number - integerPart) * 100);
 
-        int milhoes = parteInteira / 1_000_000;
-        int milhares = parteInteira % 1_000_000 / 1_000;
-        int centenas = parteInteira % 1_000;
+        var parts = new List<string>();
 
-        if (milhoes > 0)
+        int millions = integerPart / 1_000_000;
+        int thousands = integerPart % 1_000_000 / 1_000;
+        int hundreds = integerPart % 1_000;
+
+        if (millions > 0)
         {
-            partes.Add($"{ConverterParte(milhoes)} {(milhoes == 1 ? "Milhão" : "Milhões")}");
+            parts.Add($"{ConvertPart(millions)} {(millions == 1 ? "Million" : "Millions")}");
         }
 
-        if (milhares > 0)
+        if (thousands > 0)
         {
-            if (milhares == 1)
-                partes.Add("Mil");
+            if (thousands == 1)
+                parts.Add("One Thousand");
             else
-                partes.Add($"{ConverterParte(milhares)} Mil");
+                parts.Add($"{ConvertPart(thousands)} Thousand");
         }
 
-        if (centenas > 0)
+        if (hundreds > 0)
         {
-            partes.Add($"{ConverterParte(centenas)}");
+            parts.Add(ConvertPart(hundreds));
         }
 
-        var resultado = new StringBuilder();
-        resultado.Append(string.Join(" e ", partes));
+        var result = new StringBuilder();
+        result.Append(string.Join(" and ", parts));
 
-        if (parteInteira > 0)
-            resultado.Append(parteInteira == 1 ? " Metical" : " Meticais");
+        if (integerPart > 0)
+            result.Append(integerPart == 1 ? " Metical" : " Meticais");
 
-        if (parteDecimal > 0)
+        if (decimalPart > 0)
         {
-            if (parteInteira > 0)
-                resultado.Append(" e ");
-            resultado.Append(ConverterParte(parteDecimal));
-            resultado.Append(parteDecimal == 1 ? " Centavo" : " Centavos");
+            if (integerPart > 0)
+                result.Append(" and ");
+
+            result.Append(ConvertPart(decimalPart));
+            result.Append(decimalPart == 1 ? " Penny" : " Pence");
         }
 
-        return resultado.ToString();
+        return result.ToString();
     }
 
-    private static string ConverterParte(int numero)
+    private static string ConvertPart(int number)
     {
-        var extenso = new StringBuilder();
+        var words = new StringBuilder();
 
-        if (numero >= 100)
+        if (number >= 100)
         {
-            int centena = numero / 100;
+            int hundred = number / 100;
+            words.Append(Hundreds[hundred]);
 
-            if (centena == 1 && numero % 100 == 0)
-                extenso.Append("Cem");
-            else
-                extenso.Append(Centenas[centena]);
+            number %= 100;
 
-            numero %= 100;
-
-            if (numero > 0)
-                extenso.Append(" e ");
+            if (number > 0)
+                words.Append(" and ");
         }
 
-        if (numero >= 10 && numero < 20)
+        if (number >= 10 && number < 20)
         {
-            extenso.Append(DezADezenove[numero - 10]);
+            words.Append(TenToNineteen[number - 10]);
         }
         else
         {
-            if (numero >= 20)
+            if (number >= 20)
             {
-                int dezena = numero / 10;
-                extenso.Append(Dezenas[dezena]);
-                numero %= 10;
+                int ten = number / 10;
+                words.Append(Tens[ten]);
 
-                if (numero > 0)
-                    extenso.Append(" e ");
+                number %= 10;
+
+                if (number > 0)
+                    words.Append(" and ");
             }
 
-            if (numero > 0)
-                extenso.Append(Unidades[numero]);
+            if (number > 0)
+                words.Append(Units[number]);
         }
 
-        return extenso.ToString();
+        return words.ToString();
     }
 }
