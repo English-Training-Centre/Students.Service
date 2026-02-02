@@ -8,7 +8,7 @@ using Students.Service.src.Application.Interfaces;
 
 namespace Students.Service.src.Application.Handlers;
 
-public sealed class StudentHandler (IStudentRepository studentRep, IUserGrpcService userClient, ISettingFlyerIdGrpcService flyerClient, ILogger<StudentHandler> logger) : IStudentGrpcService
+public sealed class StudentHandler(IStudentRepository studentRep, IUserGrpcService userClient, ISettingFlyerIdGrpcService flyerClient, ILogger<StudentHandler> logger) : IStudentGrpcService
 {
     private readonly IStudentRepository _studentRep = studentRep;
     private readonly IUserGrpcService _userClient = userClient;
@@ -46,9 +46,9 @@ public sealed class StudentHandler (IStudentRepository studentRep, IUserGrpcServ
                 request.StudentGender,
                 request.StudentBirthDate,
                 request.ResidencialAddress
-            );  
+            );
 
-            Guid studentId = await _studentRep.CreateStudentAsync(studentRequest, ct) ;            
+            Guid studentId = await _studentRep.CreateStudentAsync(studentRequest, ct);
             if (studentId.Equals(Guid.Empty))
             {
                 return new StudentGrpcCreateResponse { IsSuccess = false, Message = "Student ID is null" };
@@ -64,7 +64,7 @@ public sealed class StudentHandler (IStudentRepository studentRep, IUserGrpcServ
                 );
 
                 await _studentRep.CreateGuardianAsync(guardianRequest, ct);
-            }    
+            }
 
             var courseRequest = new CourseCreateRequest
             (

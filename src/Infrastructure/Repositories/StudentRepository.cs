@@ -4,7 +4,7 @@ using Students.Service.src.Application.Interfaces;
 
 namespace Students.Service.src.Infrastructure.Repositories;
 
-public sealed class StudentRepository (IPostgresDB db, ILogger<StudentRepository> logger) : IStudentRepository
+public sealed class StudentRepository(IPostgresDB db, ILogger<StudentRepository> logger) : IStudentRepository
 {
     private readonly IPostgresDB _db = db;
     private readonly ILogger<StudentRepository> _logger = logger;
