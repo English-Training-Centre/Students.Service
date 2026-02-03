@@ -45,7 +45,7 @@ public sealed class StudentHandler(IStudentRepository studentRep, IUserGrpcServi
                 flyerId,
                 request.StudentGender,
                 request.StudentBirthDate,
-                request.ResidencialAddress
+                request.StudentResidencialAddress
             );
 
             Guid studentId = await _studentRep.CreateStudentAsync(studentRequest, ct);
